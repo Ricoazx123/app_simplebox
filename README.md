@@ -1,26 +1,22 @@
-# app_simplebox
-simple hack box
-
-```
-# Rsc-Neo4J
+# simplebox
 
 ## 壹、運用構想
 
 ### 一、運用目標
 
-* 運用雲端Docker資源，以建置本地端Neo4J容器映像檔之作法。
+* 提供一個腳本，執行後可建立簡單靶機環境
 
 ### 二、運用架構
 
-* DockerHub提供Neo4J官方映像檔。
-* 本Repo提供DockerFile及初始化Cypher檔範例。
+* 本Repo提供一個bash script
 
 ### 三、運作流程
 
-* 利用DockerFile及初始化Cypher檔，建置本地映像檔後，可實例化為容器作為單一SOA端。
-* 其他SOA或User透過網路存取資料庫。
-  * Neo4j Browser & Neo4j Cypher HTTP : Port 7474
-  * Neo4j Browser & Neo4j Cypher HTTPS: Port 7473
+* 將bash script複製到Ubuntu的VM或DockerContainer中。
+* 以Root權限執行後，可：
+    *自動設定弱密碼之ssh服務。
+    *自動設定一般使用者CP提權弱點
+* 使用者可以此設定後之VM或DockerContainer，作為練習破密及提權靶機
 
 ## 貳、內容結構
 
