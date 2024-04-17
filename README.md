@@ -13,9 +13,13 @@
 ### 三、運作流程
 
 * 將bash script複製到Ubuntu的VM或DockerContainer中。
+* 使用特殊的port用以執行gitlab的頁面
+* 能夠模擬特殊版本的gitlab登入介面 同時具有郵件登入的功能
+* 其中gitlab包含像是利用這CVE-2023-7028類的exploit 能夠做密碼重設的POC
+* 透過登入使用者gitlab後 能夠檢查使用者開發項目 並其中尋得ssh連線的關鍵
 * 以Root權限執行後，可：
-    *自動設定弱密碼之ssh服務。
-    *自動設定一般使用者CP提權弱點
+  -自動設定弱密碼之ssh服務。
+  -自動設定一般使用者CP提權弱點 
 * 使用者可以此設定後之VM或DockerContainer，作為練習破密及提權靶機
 
 ## 貳、內容結構
@@ -23,10 +27,8 @@
 * Github Repo<br/>
   📁.github資料夾<br/>
   └ 📁actions<br/>
-  　└ ◻️UnitTest.yml<br/>
-  　└ ◻️ModuleTest.yml<br/>
-  　└ ◻️TestThenPublishZip.yml<br/>
-  　└ ◻️TestThenPublishContainer.yml<br/>
+  　└ ◻️ModuleTest.yml<br/>  //測試檔案上傳能否使用
+  　└ ◻️TestThenPublishZip.yml<br/> //放之前版本的內容
   📁.vs資料夾<br/>
   📁doc資料夾<br/>
   ◻️.gitignore檔案<br/>
@@ -42,7 +44,7 @@
 None
 
 ### 三、模組設計
-
+用gpt跑跑看 可以把劇本寫寫看 或是直接叫gpt寫一個有漏洞的環境(or 網頁?)
 設計(滾修)後直接於Readme註記。
 
 ### 四、模發測佈
@@ -57,9 +59,9 @@ None
 
 #### (三)模組發佈
 
-測試通過後，手動於release介面發佈。
+利用github action做自動化發佈。
 
-### 五、系測版控
+### [待修更]五、系測版控
 
 #### (一)獨立使用
 
