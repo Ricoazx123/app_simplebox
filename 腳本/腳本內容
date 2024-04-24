@@ -1,0 +1,101 @@
+* 說明
+创建GitLab环境，并模拟潜在的漏洞。
+创建一个GitLab项目，并将SQL文件推送到其中。
+设置SSH和sudo权限，包括弱密码和sudo权限问题。
+模拟可能在现实世界中用于安全研究和渗透测试的配置问题。
+
+* 以下為腳本初版內容
+
+#!/bin/bash
+
+# Step 1: Pull Docker images
+docker pull gitlab/gitlab-ce:latest
+docker pull mysql:latest
+docker pull ubuntu:latest
+
+# Step 2: Set up GitLab with a vulnerable configuration
+docker run --detach \
+  --hostname gitlab.local \
+  --publish 80:80 \
+  --publish 22:22 \
+  --name vulnerable_gitlab \
+  --restart always \
+  gitlab/gitlab-ce:latest
+
+# 等待GitLab启动
+echo "Waiting for GitLab to start..."
+sleep 180  # 根据GitLab启动时间调整
+
+# 创建一个GitLab项目
+YOUR_GITLAB_TOKEN="your_gitlab_token"
+YOUR_GITLAB_URL="http://localhost"  # 或其他GitLab URL
+
+PROJECT_NAME="vulnerable_sql_project"
+PROJECT_ID=$(curl --header "PRIVATE-TOKEN: $YOUR_GITLAB_TOKEN" \
+  --data "name=$PROJECT_NAME" \
+  --data "visibility=private" \
+  "$YOUR_GITLAB_URL/api/v4/projects" | jq -r '.id')
+
+echo "GitLab project created with ID: $PROJECT_ID"
+
+# Step 3: 创建SQL文件并推送到GitLab
+SQL_FILE_PATH="./create_users.sql"
+cat <<EOF > $SQL_FILE_PATH
+-- Create user database
+CREATE DATABASE IF NOT EXISTS user_db;
+
+-- Use the database
+USE user_db;
+
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255),
+  password VARCHAR(255)
+);
+
+-- Insert sample users
+INSERT INTO users (username, password) VALUES
+('user1', 'password123'),
+('user2', 'secret123'),
+('user3', 'admin123');
+EOF
+
+# 初始化Git仓库并添加SQL文件
+git init
+git remote add origin "$YOUR_GITLAB_URL/$PROJECT_NAME.git"
+git checkout -b main
+git add $SQL_FILE_PATH
+git commit -m "Add SQL file with user data"
+git push -u origin main
+
+echo "SQL file pushed to GitLab project."
+
+# Step 4: Set up SSH and sudo with vulnerabilities
+docker run --detach \
+  --name vulnerable_ssh \
+  --publish 2222:22 \
+  ubuntu:latest
+
+docker exec -it vulnerable_ssh apt-get update
+docker exec -it vulnerable_ssh apt-get install -y openssh-server sudo
+
+# 配置SSH
+docker exec -it vulnerable_ssh bash -c "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
+docker exec -it vulnerable_ssh systemctl start ssh
+
+# 创建用户并设置密码
+ROOT_PASSWORD="secure_root_password"
+USER_NAME="vulnerable_user"
+USER_PASSWORD="weak_password"
+
+# 创建root用户和普通用户
+docker exec -it vulnerable_ssh bash -c "echo 'root:$ROOT_PASSWORD' | chpasswd"
+docker exec -it vulnerable_ssh adduser --disabled-password --gecos "" $USER_NAME
+docker exec -it vulnerable_ssh bash -c "echo '$USER_NAME:$USER_PASSWORD' | chpasswd"
+docker exec -it vulnerable_ssh usermod -aG sudo $USER_NAME
+
+# 配置不安全的sudo权限
+docker exec -it vulnerable_ssh bash -c "echo '$USER_NAME ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
+
+echo "Setup complete. Connect with SSH and test for GitLab and sudo vulnerabilities."
