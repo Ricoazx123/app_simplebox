@@ -1,0 +1,26 @@
+# 使用官方的 PHP + Apache 基礎鏡像
+FROM php:7.4-apache
+
+# 安裝 MySQL 客戶端和 SSH 服務
+RUN apt-get update && apt-get install -y \
+    mariadb-client \
+    openssh-server \
+    sudo
+
+# 安裝 mysqli 擴展
+RUN docker-php-ext-install mysqli
+
+# 添加 setup.sh 腳本
+COPY setup.sh /setup.sh
+
+# 授予腳本執行權限
+RUN chmod +x /setup.sh
+
+# 運行 setup.sh 腳本
+RUN /setup.sh
+
+# 對外暴露 80（Apache）和 22（SSH）端口
+EXPOSE 80 22
+
+# 啟動 SSH 和 Apache
+CMD service ssh start && apache2-foreground
