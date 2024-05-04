@@ -9,9 +9,15 @@ sudo apt-get install apache2 php libapache2-mod-php mysql-server openssh-server 
 echo "設置 MySQL 並設置弱密碼..."
 sudo systemctl start mysql
 sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password123'; FLUSH PRIVILEGES;"
-sudo mysql -u root -e "CREATE DATABASE userdb;"
-sudo mysql -u root -e "USE userdb; CREATE TABLE users (id INT, name VARCHAR(100), email VARCHAR(100));"
-sudo mysql -u root -e "USE userdb; INSERT INTO users VALUES (1, 'Alice', 'alice@example.com'), (2, 'Bob', 'bob@example.com');"
+
+# 創建 MySQL 資料庫和表格
+echo "創建 MySQL 資料庫和表格..."
+mysql -u root -ppassword123 <<EOF
+CREATE DATABASE userdb;
+USE userdb;
+CREATE TABLE users (id INT, name VARCHAR(100), email VARCHAR(100), password VARCHAR(100));
+INSERT INTO users VALUES (1, 'Alice', 'alice@example.com', 'alicepassword'), (2, 'Bob', 'bob@example.com', 'bobpassword'), (3, 'sshuser', 'sshuser@example.com', '123');
+EOF
 
 # 設置網頁
 echo "設置網頁..."
@@ -44,7 +50,7 @@ cat <<EOF > /var/www/html/result.php
   }
 
   \$userID = \$_GET['userID'];
-  \$query = "SELECT name, email FROM users WHERE id = \$userID";
+  \$query = "SELECT name, email, password FROM users WHERE id = \$userID";
   \$result = \$conn->query(\$query);
 
   if (!\$result) {
@@ -53,7 +59,7 @@ cat <<EOF > /var/www/html/result.php
 
   if (\$result->num_rows > 0) {
     while(\$row = \$result->fetch_assoc()) {
-      echo "Name: " . \$row["name"] . " - Email: " . \$row["email"] . "<br>";
+      echo "Name: " . \$row["name"] . " - Email: " . \$row["email"] . " - Password: " . \$row["password"] . "<br>";
     }
   } else {
     echo "0 results";
@@ -89,4 +95,3 @@ echo "創建 user flag..."
 echo "user_flag{this_is_a_test_flag}" | sudo tee /home/sshuser/user_flag.txt
 
 echo "靶機設置完成。請開始你的測試！"
-
