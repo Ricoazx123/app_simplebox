@@ -1,14 +1,9 @@
-* 說明
-創建一個可以使用sql injection的網頁 特過輸入 1 or 1=1便可以得到相關的帳密再進行ssh得到相關的userflag
-
-* 以下為腳本初版內容
 #!/bin/bash
 
 # 安裝必要的軟件
 echo "安裝 Apache 和 PHP..."
 sudo apt-get update
 sudo apt-get install apache2 php libapache2-mod-php mysql-server openssh-server php-mysqli -y
-sudo apt-get install php-mysqli -y
 
 # 設置 MySQL (使用弱密碼)
 echo "設置 MySQL 並設置弱密碼..."
@@ -76,8 +71,8 @@ sudo systemctl restart apache2
 
 # 創建 SSH 用戶
 echo "創建 SSH 用戶..."
-sudo adduser sshuser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password
-echo "sshuser:password123" | sudo chpasswd
+sudo adduser sshuser --gecos "SSH User,RoomNumber,WorkPhone,HomePhone" --disabled-password
+echo "sshuser:123" | sudo chpasswd
 
 # 添加自定義用戶以進行 SSH 連接
 echo "添加自定義 SSH 用戶..."
@@ -94,3 +89,4 @@ echo "創建 user flag..."
 echo "user_flag{this_is_a_test_flag}" | sudo tee /home/sshuser/user_flag.txt
 
 echo "靶機設置完成。請開始你的測試！"
+
