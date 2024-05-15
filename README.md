@@ -1,111 +1,91 @@
-# simplebox
+Paper Pass Box
+====
+> github.com/carlton0521
 
-## 壹、運用構想
+到shields.io這網站搜索github 相關的內容
 
-### 一、運用目標
+* Repo Info:<br/> 
+  ![C Sharp](https://img.shields.io/badge/C_Sharp-6A2BB2?logo=csharp&logoColor=white)
+  ![Bash Script](https://img.shields.io/badge/Bash_Script-1A1B92?logo=gnubash&logoColor=white)
+  ![Python使用](https://img.shields.io/badge/Python-14658C?logo=python&logoColor=white)
+  ![Docker使用](https://img.shields.io/badge/Docker-2496dD?logo=docker&logoColor=white)
+* Public Release:<br/>
+  ![版權宣告](https://img.shields.io/github/license/TwMoonBear-Arsenal/Box_PaperPass)
+  可維護度: https://codeclimate.com/oss/dashboard
+  Repo大小：https://shields.io/badges/git-hub-repo-size
+  釋出Tag：https://shields.io/badges/git-hub-tag
+  釋出Release: https://shields.io/badges/git-hub-release
+  釋出日期: https://shields.io/badges/git-hub-release-date
 
-* 提供一個腳本，執行後可建立簡單靶機環境
+# 1. 摘要資訊
 
-### 二、運用架構
+* 針對多類型決策需求，提供一個通用性決策系統，可以給定場景，進行趨勢推導及決策建議。
+* 參考OODA框架，目前版本功能重點為Decison決策輔助，未來將逐步發展Orientation情資管理、Action指揮管制及Observation觀察。
 
-* 本Repo提供一個bash script
+# 2. 項目介紹
 
-### 三、運作流程
+## 2.1. Release Asset
 
-* 將bash script複製到Ubuntu的VM或DockerContainer中。
-* 使用特殊的port用以執行gitlab的頁面
-* 能夠模擬特殊版本的gitlab登入介面 同時具有郵件登入的功能
-* 其中gitlab包含像是利用這CVE-2023-7028類的exploit 能夠做密碼重設的POC
-* 透過登入使用者gitlab後 能夠檢查使用者開發項目 並其中尋得ssh連線的關鍵
-* 以Root權限執行後，可：
-  -自動設定弱密碼之ssh服務。
-  -自動設定一般使用者CP提權弱點 
-* 使用者可以此設定後之VM或DockerContainer，作為練習破密及提權靶機
+- **data資料夾**：
+  - **cfgSkOrchestaator.yml**：Mod_SkOrchestrator1組態檔
+  - **cfgReasoner.yml**：Mod_Reasoner1組態檔
+- **dockercompose檔案**：docker微服務設定
+- **LICENSE檔案**：版權宣告
+- **README.md檔案**：說明文件
 
-## 貳、內容結構
+## 2.2. 外部依賴(外部元件)
 
-* Github Repo<br/>
-  📁.github資料夾<br/>
-  └ 📁actions<br/>
-  　└ ◻️ModuleTest.yml<br/>  //測試檔案上傳能否使用
-  　└ ◻️TestThenPublishZip.yml<br/> //放之前版本的內容
-  📁.vs資料夾<br/>
-  📁doc資料夾<br/>
-  ◻️.gitignore檔案<br/>
-  ◻️docker-compose.yml檔案<br/>
-  ◻️Dockerfile檔案<br/>
-  ◻️Mod_Gundam1.sln檔案<br/>
-  ◻️README.md<br/>
+- Mod_SkOrchestrator1：使用者自然語言訊息入口
+- Mod_Reasoner1：配合提供決策輔助功能
 
-## 參、作業步驟
+# 3. 作業運用
 
-### 一、需求分析 & 二、系統設計
+## 3.1 Repo構管
 
-None
+* 此Repo為private，直接於main branch操作更新。
 
-### 三、模組設計
-用gpt跑跑看 可以把劇本寫寫看 或是直接叫gpt寫一個有漏洞的環境(or 網頁?)
-設計(滾修)後直接於Readme註記。
+## 3.2. 系統設計 & 模組設計
 
-### 四、模發測佈
+* 於README.md及/doc/design.vpp說明。
+* 主要規格為：
+  - 可依要求提供常規知識及多種知識主題決策服務。
+  - 依給定場景進行趨勢推導。
+  - 依給定場景進行決策建議。 
+* 相關模組為：
+  - 上述相依外部模組所需組態檔 *2。
 
-#### (一)模組發展
+## 3.3. 模組發展
+ 
+### 3.3.1. 功能開發
 
-主要是dockerfile及資料庫初始化腳本，完成後直接存檔。
+* 外部模組組態檔：依各模組規範如yaml編寫。
+* ockercompose：文字檔格式編寫。
 
-#### (二)模組測試
+### 3.3.2. 模組測試
 
-利用github action做自動化測試。
+* 模組部分為組態檔，略過不測。
 
-#### (三)模組發佈
+### 3.3.3. 模組發佈
+* 包含對上述外部依賴模組設定組態檔。
+  
+## 3.4. 系統測試
 
-利用github action做自動化發佈。
+* 手動方式進行測試，
+* 測試個案包括：
+  - 個案：Get查詢Hetaoas，應能回傳提供常規知識及<測試用決策知識>
+  - 個案：以自然語言詢問常規知識：應能回復一年有幾天。
+  -  個案：以自然語言詢問無意義詞彙，應能回復釐清使用者意圖。
+  - 個案：
+    - 對給定連鎖衝擊場景進行趨勢推導。
+    - 對給定連鎖衝擊場景進行決策建議。
+  - 個案：
+    - 對給定大型救災場景進行趨勢推導。
+    - 對給定大型救災場景進行決策建議。
+  - 個案：
+    - 對給定資安事件場景進行趨勢推導。
+    - 對給定資安事件場景進行決策建議。
 
-### [待修更]五、系測版控
+-----
+第二部分(考試範圍外)
 
-#### (一)獨立使用
-
-* [方法]執行image
-  * 利用docker直接建置，將新增image至本地registry
-    ```bash
-    # -t: tag
-    # . : 單點表示目前目錄
-    # --no-cache: 避免在Build時被cache，造成沒有讀到最新的Dockerfile
-    docker build -t neo4j . --no-cache
-    ```
-  * 檢視本地images
-    ```bash
-    docker images
-    ```  
-  * 使用本地image起容器
-    ```
-    docker run --publish=7474:7474 --publish=7687:7687 --volume=$HOME/neo4j/data:/data neo4j
-    ```
-* 瀏覽器開啟 
-* [方法]執行dockercompose
-  * 直接執行dockercompose
-    ```powershell
-    docker-compose up
-    ```
-* 登入瀏覽器確認運作正常
-* http://localhost:7474/browser/
-
-* 使用UI關閉container並刪除image
-
-#### (二)併入SOA使用
-
-* 將dockercompose內容複製至系統dockercompose使用。
-  ```
-  docker-compose up 
-  ```
-```
-
-### 補充Gitignore
-
-補下列文字：
-```
-#chen
-*.lck
-*.bak_*
-*.vbak
-```
+* 用例圖 可用visual paradigm 做編輯
