@@ -1,54 +1,40 @@
 # Docker介紹
 
 ## 概覽
-- Docker是什麼？
-- Docker的關鍵功能
-- 使用Docker的好處
+本次的docker是為了幫助此靶機的使用者能夠更快的進入靶機所搭建的環境而設計的，其中需要將dockerfile和.sh檔放在放在同個目錄下才可以使用
 
-## 安裝指南
-- 安裝前的準備
-- 在Windows上安裝Docker
-- 在Mac上安裝Docker
-- 在Linux上安裝Docker
+## Docker 架構介紹
+- Docker環境:
+  這個 Dockerfile 建立一個基於 Ubuntu 的環境，其中包括了安裝 Ruby, Apache, PHP, MySQL, OpenSSH 等必需的服務和工具，目的是搭建一個具有 Web 服務和 SSH 存取能力的容器，用於測試和開發。
 
-## Docker基礎
-- Docker架構
-  - Docker引擎
-  - Docker對象：映像檔、容器、網絡和卷
-- 運行您的第一個容器
-- 了解Docker映像檔
+- Docker指令介紹:
+  1. 其中一部分的指令用來安裝必要的元件:apache2 、php、mysql-server、openssh、gem、sudo 、suby。指令如下
+  ```
+  RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ruby \
+    apache2 \
+    php \
+    libapache2-mod-php \
+    mysql-server \
+    openssh-server \
+    php-mysqli \
+    sudo \
+    gem
+  ```
+  
+  2. 將本地的 setup.sh 腳本複製到容器中，賦予它執行權限，然後執行它。這個腳本用於進一步配置容器，例如設置 Web 服務和資料庫。
+  ```
+  COPY setup.sh /setup.sh
+  RUN chmod +x /setup.sh
+  RUN /setup.sh
+  ```
 
-## Docker指令
-- 基本Docker指令
-  - `docker run`
-  - `docker build`
-  - `docker pull`
-  - `docker push`
-  - `docker stop`
-  - `docker rm`
-- 管理映像檔和容器
-- Docker網絡操作
-
-## Dockerfile
-- Dockerfile是什麼？
-- 編寫簡單的Dockerfile
-- 從Dockerfile構建映像檔
-
-## Docker Compose
-- Docker Compose是什麼？
-- 編寫`docker-compose.yml`文件
-- 運行多容器應用程式
-
-## 進階主題
-- Docker網絡深入了解
-- Docker安全最佳實踐
-- 在生產環境中使用Docker
-
-## 資源
-- 官方Docker文檔
-- 有用的Docker教程
-- 社區論壇和支持
+  3.  最後，容器啟動指令
+  ```
+  CMD service apache2 start && service mysql start && service ssh start && tail -f /dev/null
+  ```
 
 ## 總結
-- Docker好處總結
-- 容器化的未來趨勢
+這個 Dockerfile 提供了一個完整的開發環境，適合進行 Web 和數據庫的開發測試。通過使用 Docker，開發者可以在一個隔離的環境中運行和測試他們的應用，確保環境的一致性和可移植性。
+
+
