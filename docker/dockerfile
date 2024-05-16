@@ -1,0 +1,29 @@
+# 使用 Ubuntu 作为基础镜像
+FROM ubuntu:latest
+
+# 更新软件库并安装必要的包，包括 Ruby 和相關依賴
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ruby \
+    apache2 \
+    php \
+    libapache2-mod-php \
+    mysql-server \
+    openssh-server \
+    php-mysqli \
+    sudo \
+    gem
+
+# 安装 Ruby Gems
+RUN gem install bundler
+
+# 复制 .sh 脚本到镜像的根目录
+COPY setup.sh /setup.sh
+
+# 给予执行权限
+RUN chmod +x /setup.sh
+
+# 运行 .sh 脚本文件来进行系统配置
+RUN /setup.sh
+
+# 开启服务，确保在容器启动时 Apache、MySQL 和 SSH 都可以运行
+CMD service apache2 start && service mysql start && service ssh start && tail -f /dev/null
