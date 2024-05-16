@@ -57,7 +57,7 @@ EOF
 
 echo "设置网页..."
 sudo rm /var/www/html/index.html
-cat <<EOF > /var/www/html/index.php
+sudo bash -c 'cat <<EOF > /var/www/html/index.php
 <!DOCTYPE html>
 <html>
 <head>
@@ -72,9 +72,9 @@ cat <<EOF > /var/www/html/index.php
   </form>
 </body>
 </html>
-EOF
+EOF'
 
-cat <<EOF > /var/www/html/result.php
+sudo bash -c 'cat <<EOF > /var/www/html/result.php
 <?php
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
@@ -103,7 +103,7 @@ cat <<EOF > /var/www/html/result.php
 
   \$conn->close();
 ?>
-EOF
+EOF'
 
 echo "重启 Apache 以使配置生效..."
 sudo systemctl restart apache2
