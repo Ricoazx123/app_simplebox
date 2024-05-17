@@ -22,10 +22,13 @@ jobs:
 
       # 打包檔案(2/2)-壓縮上傳
       - name: 打包檔案(2/2)-壓縮上傳
+        run: zip -r release.zip release/
+        
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release
-          path: release/
+          path: release.zip
 
       # 準備Docker受測容器
       - name: 準備Docker受測容器
@@ -35,3 +38,27 @@ jobs:
           cd deployment
           docker build -t myapp:latest -f dockerfile .
           docker run -d -p 2222:22 --name myapp_container myapp:latest
+
+      # 创建 Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: 'Description of the release'
+          draft: false
+          prerelease: false
+
+      # 上传 Release Asset
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release.zip
+          asset_name: release.zip
+          asset_content_type: application/zip
