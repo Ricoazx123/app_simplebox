@@ -37,7 +37,7 @@ jobs:
           docker run -d -p 2222:22 --name myapp_container myapp:latest
 
       - name: Create Release
-        id: create_release  # Ensure the ID is set correctly here
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
@@ -46,12 +46,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+      - name: Check Release Asset
+        id: check_asset
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:owner/:repo/releases/tags/:tag
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          tag: ${{ env.RELEASE_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Release Asset
+        if: steps.check_asset.outputs.data.assets == null || fromJSON(steps.check_asset.outputs.data).assets.*.name != 'release.zip'
+        uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Ensure this reference is correct
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release.zip
           asset_name: release.zip
           asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
