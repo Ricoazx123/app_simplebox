@@ -1,0 +1,37 @@
+name: moduleTest
+
+on: [push]
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 取出代碼
+      - name: 取出代碼
+        uses: actions/checkout@v2
+
+      # 打包文件(1/2)-蒐整檔案
+      - name: 打包文件(1/2)-蒐整檔案
+        run: |
+          mkdir release
+          cp LICENSE release/
+          cp README.md release/
+          cp src/cfg_docker/dockerfile release/
+          cp src/scr_paperPassBox/boxInitialize.sh release/
+
+      # 打包檔案(2/2)-壓縮上傳
+      - name: 打包檔案(2/2)-壓縮上傳
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release/
+
+      # 準備Docker受測容器
+      - name: 準備Docker受測容器
+        run: |
+          mkdir deployment
+          cp -r release/* deployment/
+          cd deployment
+          docker build -t myapp:latest -f dockerfile .
+          docker run -d -p 2222:22 --name myapp_container myapp:latest
