@@ -10,6 +10,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Set up variables
+        id: vars
+        run: echo "RELEASE_VERSION=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Prepare Files
         run: |
           mkdir release
@@ -34,10 +38,11 @@ jobs:
           docker run -d -p 2222:22 --name myapp_container myapp:latest
 
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./release.zip
+          tag_name: ${{ env.RELEASE_VERSION }}
+          name: Release ${{ env.RELEASE_VERSION }}
+          files: release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
