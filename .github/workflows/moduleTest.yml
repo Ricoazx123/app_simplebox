@@ -58,13 +58,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
+      - name: Wait for Release to be ready
+            uses: jakejarvis/wait-action@master
+            with:
+            time: '10s'
+
       - name: Upload Release Asset
-        if: contains(steps.check_asset.outputs.data, '"name":"release.zip"') == false
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release.zip
-          asset_name: release.zip
-          asset_content_type: application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if: contains(steps.check_asset.outputs.data, '"name":"release.zip"') == false
+          uses: actions/upload-release-asset@v1
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ./release.zip
+            asset_name: release.zip
+            asset_content_type: application/zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
