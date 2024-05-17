@@ -1,43 +1,37 @@
-name: Module Test Workflow
+name: moduleTest
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  build-and-test:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      # 取出代碼
+      - name: 取出代碼
+        uses: actions/checkout@v2
 
-    - name: Package
-      run: |
-        mkdir release
-        cp LICENSE README.MD src/Cfg_Docker/dockerfile src/scr_paperPassBox/boxInitialize.sh release/
-        zip -r release.zip release/
+      # 打包文件(1/2)-蒐整檔案
+      - name: 打包文件(1/2)-蒐整檔案
+        run: |
+          mkdir release
+          cp LICENSE release/
+          cp README.md release/
+          cp src/cfg_docker/dockerfile release/
+          cp src/scr_paperPassBox/boxInitialize.sh release/
 
-    - name: Upload Release Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: release
-        path: release.zip
+      # 打包檔案(2/2)-壓縮上傳
+      - name: 打包檔案(2/2)-壓縮上傳
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release/
 
-    - name: Deploy
-      run: |
-        cp -R release deployment
-        cd deployment
-        docker build -t module-container -f src/Cfg_Docker/dockerfile .
-        docker run -d --name module-test-container -p 2222:22 module-container
-
-    - name: Test
-      run: |
-        cp -R scr_paperPassBox_test test
-        cd test
-        pipenv install
-        pipenv run pytest
-
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-results
-        path: test/*.xml
+      # 準備Docker受測容器
+      - name: 準備Docker受測容器
+        run: |
+          mkdir deployment
+          cp -r release/* deployment/
+          cd deployment
+          docker build -t myapp:latest -f dockerfile .
+          docker run -d -p 2222:22 --name myapp_container myapp:latest
