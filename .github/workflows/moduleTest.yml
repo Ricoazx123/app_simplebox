@@ -7,31 +7,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 取出代碼
-      - name: 取出代碼
-        uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      # 打包文件(1/2)-蒐整檔案
-      - name: 打包文件(1/2)-蒐整檔案
+      - name: Prepare Files
         run: |
           mkdir release
           cp LICENSE release/
           cp README.md release/
           cp docker/dockerfile release/
           cp src/setup.sh release/
+          zip -r release.zip release/
 
-      # 打包檔案(2/2)-壓縮上傳
-      - name: 打包檔案(2/2)-壓縮上傳
-        run: zip -r release.zip release/
-        
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: release
           path: release.zip
 
-      # 準備Docker受測容器
-      - name: 準備Docker受測容器
+      - name: Build and Run Docker Container
         run: |
           mkdir deployment
           cp -r release/* deployment/
@@ -39,20 +33,14 @@ jobs:
           docker build -t myapp:latest -f dockerfile .
           docker run -d -p 2222:22 --name myapp_container myapp:latest
 
-      # 创建 Release
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
-          body: 'Description of the release'
-          draft: false
-          prerelease: false
 
-      # 上传 Release Asset
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
