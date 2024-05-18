@@ -2,6 +2,7 @@
 
 echo "开始安装必要的软件..."
 sudo apt-get update
+sudo apt-get upgrade
 sudo apt-get install -y ruby apache2 php libapache2-mod-php mysql-server openssh-server php-mysqli
 
 echo "安装 Ruby 的 bundler..."
