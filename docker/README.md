@@ -34,6 +34,10 @@
   CMD service apache2 start && service mysql start && service ssh start && tail -f /dev/null
   ```
 
+## 使用方式 
+下載這個資料夾後直接使用以下指令 便可以直接完成docker化
+> docker build -f dockerfile .
+
 ## 總結
 這個 Dockerfile 提供了一個完整的開發環境，適合進行 Web 和數據庫的開發測試。通過使用 Docker，開發者可以在一個隔離的環境中運行和測試他們的應用，確保環境的一致性和可移植性。
 
