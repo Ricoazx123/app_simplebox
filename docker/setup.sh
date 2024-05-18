@@ -77,33 +77,48 @@ EOF'
 
 sudo bash -c 'cat <<EOF > /var/www/html/result.php
 <?php
-  error_reporting(E_ALL);
-  ini_set('display_errors', 1);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-  \$conn = new mysqli('localhost', 'root', 'password123', 'userdb');
+$servername = "localhost";
+$username = "root";
+$password = "password123";  // 替换为你的数据库密码
+$dbname = "userdb";
 
-  if (\$conn->connect_error) {
-    die("Connection failed: " . \$conn->connect_error);
-  }
+// 创建与数据库的连接
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-  \$userID = \$_GET['userID'];
-  \$query = "SELECT name, email, password FROM users WHERE id = \$userID";
-  \$result = \$conn->query(\$query);
+// 检查连接是否成功
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-  if (!\$result) {
-    die("Query failed: " . \$conn->connect_error);
-  }
+// 从GET请求中直接获取userID，无任何过滤或预处理
+$userID = $_GET['userID'];
 
-  if (\$result->num_rows > 0) {
-    while(\$row = \$result->fetch_assoc()) {
-      echo "Name: " . \$row["name"] . " - Email: " . \$row["email"] . " - Password: " . \$row["password"] . "<br>";
+// 直接将用户输入用于SQL查询
+$query = "SELECT name, email, password FROM users WHERE id = '$userID'";
+$result = $conn->query($query);
+
+// 检查查询是否成功
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
+
+// 处理查询结果
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "Name: " . $row["name"] . " - Email: " . $row["email"] . " - Password: " . $row["password"] . "<br>";
     }
-  } else {
+} else {
     echo "0 results";
-  }
+}
 
-  \$conn->close();
+// 关闭连接
+$conn->close();
 ?>
+
+
 EOF'
 
 echo "重启 Apache 以使配置生效..."
