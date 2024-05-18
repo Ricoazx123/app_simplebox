@@ -66,6 +66,7 @@ sudo bash -c 'cat <<EOF > /var/www/html/index.php
 </head>
 <body>
   <h1>Vulnerability: SQL Injection</h1>
+  <p>Type user ID to see details. Try SQL Injection here!</p>
   <form action="result.php" method="GET">
     <label for="userID">User ID:</label>
     <input type="text" id="userID" name="userID">
