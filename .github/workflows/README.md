@@ -1,103 +1,25 @@
 請求事項說明
 ========
-> by github.com/carlton0521<br/>
+用於在每次 push 時觸發建立和部署任務。這個工作流程包含了多個步驟，用於檢出代碼、設置版本變量、準備文件、上傳文件包、構建並運行 Docker 容器，最後創建並發布 GitHub Release。
 
 # 運用構想
+1. 檢出代碼
+這一步使用了 actions/checkout@v3 這個動作，用於檢出仓库代码到 GitHub Actions 的運行器上。這使得後續步驟可以對代碼進行各種操作。
 
-- I need AI provide me a Github workflow file. 
-- I want to use the action file to dockerize my app and test it. 
+2. 設置版本變量
+此步驟將當前的日期和時間設置為一個環境變量 RELEASE_VERSION。這個版本標記用於標識發布的版本，格式為 vYYYYMMDDHHMMSS。
 
-# 擬請AI提供項目
+3. 準備文件
+此步驟首先創建一個 release 目錄，然後將 LICENSE、README.md、dockerfile 以及 setup.sh 複製到該目錄中。最後使用 zip 命令將整個 release 目錄壓縮為 release.zip，這個壓縮文件包含了所有需要的發布文件。
 
-- Please write a Github workflow file, named **moduleTest**. This Github workflow file should contain following steps:
-  - Use Ubuntu OS
-  - Step: Package
-    * Copy following repo files to a folder, named **release**:
-      - **LICENSE**
-      - **README.MD**
-      - **src/Cfg_Docker/dockerfile**
-      - **src/scr_paperPassBox/boxInitialize.sh** 
-    * Package(Zip) these files and upload for later use. 
-  - Step: Deploy
-    * Duplicate the **release** folder as **deployment** folder
-    * In the **deployment** folder:
-      - use the dockerfile to build and run a container with local port **2222** bind to container port **22**.
-  - Step: Test
-    * Copy the **scr_paperPassBox_test** folder from repo as test folder.
-    * In the test folder
-      - Restore pipenv base on the Pipfile
-      - Run the pipEnv shell, and use pytest test the running container.
+4. 上傳文件
+使用 actions/upload-artifact@v3 將壓縮後的 release.zip 作為工件上傳。這使得其他工作流程或作業可以訪問這些文件。
 
-# 擬請AI作業流程
+5. 構建和運行 Docker 容器
+此步驟將 release 目錄中的文件複製到 deployment 目錄，然後在該目錄中使用 dockerfile 來構建 Docker 映像。建立完成後，運行一個 Docker 容器，映射 2222 端口到容器的 22 端口。
 
-## 通用要求:When prepare the data:
-- give instructions about how to use this file in the beginning.
-- do the work step by step.make it easy to understand for students.
-- provide clear explanation with traditional Chinese.
+6. 創建 Release
+使用 softprops/action-gh-release@v1 創建一個新的 GitHub Release，版本號使用之前設定的 RELEASE_VERSION，並將 release.zip 文件作為發布內容。
 
-## 通用要求:When respond the data to me
-- just show the action files only. If you need any thing for reminding, put it in the action file in comment style.
-
-# 提供AI參考格式
-
-```yaml
-# 此 GitHub Workflow 的功能是將指定文件複製到名為 release 的文件夾中，然後使用這些文件來構建和運行 Docker 容器，並進行測試。使用說明：
-# 1. 將此文件保存為 .github/workflows/moduleTest.yml。
-# 2. 當推送到 main 分支或 pull request 事件發生時，此工作流程將自動執行。
-
-name: moduleTest
-
-on: [push, pull_request]
-
-jobs:
-  build_and_test:
-    runs-on: ubuntu-latest
-
-    steps:
-      # 取出代碼
-      - name: 取出代碼
-        uses: actions/checkout@v2
-
-      # 打包文件(1/2)-蒐整檔案
-      - name: 打包文件(1/2)-蒐整檔案
-        run: |
-          mkdir release
-          cp LICENSE release/
-          cp README.MD release/
-          cp src/cfg_docker/dockerfile release/
-          cp src/scr_paperPassBox/boxInitialize.sh release/
-
-      # 打包檔案(2/2)-壓縮上傳
-      - name: 打包檔案(2/2)-壓縮上傳
-        uses: actions/upload-artifact@v4
-        with:
-          name: release
-          path: release
-
-      # 準備Docker受測容器
-      - name: 準備Docker受測容器
-        run: |
-          cp -r ./release ./deployment
-          cd deployment
-          docker build -t myapp:latest .
-          docker run -d -p 2222:22 --name myapp_container myapp:latest
-
-      # 執行Pytest測試個案(1/3)-安裝Python(須配合pipenv版本)
-      - name: 執行Pytest測試個案(1/3)-安裝Python(須配合pipenv版本)
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10.10'
-
-      # 執行Pytest測試(2/3)-安裝pipenv並復原虛擬環境
-      - name: 執行Pytest測試(2/3)-安裝pipenv並復原虛擬環境
-        run: |
-          cp -R src/scr_paperPassBox_test test
-          cd test
-          pip install pipenv
-          pipenv install --deploy --ignore-pipfile
-
-      # 執行Pytest測試(3/3)-執行Pytest測試
-      - name: 執行Pytest測試(3/3)-執行Pytest測試
-        run: |
-          pipenv run pytest
-```
+7. 檢查資產是否已上傳
+這個步驟使用 octokit/request-action@v2.x 檢查特定版本號的發布是否已經存在，並且確認資產（如 release.zip）是否已被成功上傳。
